@@ -75,6 +75,17 @@
       text-decoration: none;
     }
     
+    #tabbar ul ul li {
+      padding-left: 1.5em;
+    }
+    
+    #tabbar ul ul li:hover, #tabbar ul ul li.pinned {
+      background: url(/images/pin-red.png) 0 center no-repeat;
+    }
+    #tabbar ul ul li.pinned:hover {
+      background: url(/images/pin-gray.png) 0 center no-repeat;
+    }
+    
     #tabbar ul ul a {
       background: none;
     }
@@ -110,7 +121,6 @@
     }
     
     #tabbar ul ul {
-      padding-left: 1.5em;
     }
     
     #tabbar>ul>li:hover>a {
@@ -133,8 +143,70 @@
       bottom: 0;
       
       margin: 10px 10px 10px 0;
-      padding: 10px;
-      background: white;
+      background: #ddd;
+    }
+    
+    .topic {
+      border-bottom: 1px solid gray;
+      text-align: center;
+      margin: 0;
+      padding: 2px;
+      font-size: 100%;
+      font-weight: normal;
+      font-family: 'Ubuntu Mono', fixed;
+    }
+    
+    .scrollback {
+      margin: 0;
+      padding: 0;
+      position: absolute;
+      top: 22px;
+      bottom: 20px;
+      
+      overflow: auto;
+    }
+    
+    .scrollback li {
+      list-style: none;
+      clear: left;
+      padding: 0 10px;
+      font-family: 'Ubuntu Mono', fixed;
+    }
+    
+    .scrollback li:hover {
+      background: #eec;
+    }
+    
+    .scrollback span.stamp {
+      display: block;
+      width: 100px;
+      float: left;
+      text-align: left;
+    }
+    
+    .scrollback span.nick {
+      width: 100px;
+      float: left;
+      text-align: right;
+    }
+    
+    .scrollback .message {
+      display: block;
+      margin-top: 0;
+      margin-bottom: 0;
+      border-left: 1px solid gray;
+      margin-left: 205px;
+      padding-left: 5px;
+    }
+    
+    .sendmsg input {
+      position: absolute;
+      border-width: 0;
+      padding: 5px;
+      border-top: 1px solid gray;
+      font-family: 'Ubuntu Mono', fixed;
+      width: 100%;
+      bottom: 0;
     }
     
   </style>
@@ -145,7 +217,7 @@
     $(function() {
       $.socket = io.connect();
       
-      $.tab = $('#connecttab');
+      $.tab = $('a.active');
       
       $.socket.on('connect', function() {
         //$.socket.emit('start', 'irc');
@@ -199,8 +271,8 @@
     <ul>
       <li>
         <ul>
-          <li><a href="#" class="unread"><span>14</span>10b/#offtopic</a></li>
-          <li><a href="#"><span></span>fn/#ooc-lang</a></li>
+          <li class="pinned"><a href="#" class="unread"><span>14</span>10b/#offtopic</a></li>
+          <li class="pinned"><a href="#"><span></span>fn/#ooc-lang</a></li>
         </ul>
       </li>
       
@@ -229,7 +301,7 @@
     </ul>
   </navigation>
   
-  <section id="connect">
+  <section id="connect" style="display: none;">
     <h1>Add Service to Bubblegum</h1>
     <p>Please enter your account information to access it via Bubblegum.</p>
     <form>
@@ -240,6 +312,79 @@
     </form>
   </section>
   
+  <section>
+    <h3 class="topic">TRAILMIX | #offtopic Television schedule: Futurama: Wednesday</h3>
+    
+    <ul class="scrollback">
+    
+      <li>
+        <span class="stamp">[00:23]</span>
+        <span class="nick">danotop</span>
+        <p class="message">relrod, i'm not worrying about that right now, but it's next on the list</p>
+      </li>
+    
+      <li>
+        <span class="stamp">[00:23]</span>
+        <span class="nick">danotop</span>
+        <p class="message">relrod, it'll probably be xchaty</p>
+      </li>
+    
+      <li>
+        <span class="stamp">[00:24]</span>
+        <span class="nick">duckinator</span>
+        <p class="message">danotop: also, i'm ending up going the exact opposite of what you're doing wrt to where i'm prototyping: i have to use chrome/ium-specific features :P</p>
+      </li>
+    
+      <li>
+        <span class="stamp">[00:25]</span>
+        <span class="nick">relrod</span>
+        <p class="message">there's not really any good reason to use browser-specific things anymore :|</p>
+      </li>
+    
+      <li>
+        <span class="stamp">[00:26]</span>
+        <span class="nick">curtis</span>
+        <p class="message">there we go</p>
+      </li>
+    
+      <li>
+        <span class="stamp">[00:26]</span>
+        <span class="nick">curtis</span>
+        <p class="message">even less of my tooth is still in my face!</p>
+      </li>
+    
+      <li>
+        <span class="stamp">[00:26]</span>
+        <span class="nick">duckinator</span>
+        <p class="message">relrod: unless your entire thing is a proof-of-concept that uses features so new that they don't exist in any browser except one</p>
+      </li>
+    
+      <li>
+        <span class="stamp">[00:26]</span>
+        <span class="nick">curtis</span>
+        <p class="message">YUMMY BLOOD</p>
+      </li>
+    
+      <li>
+        <span class="stamp">[00:26]</span>
+        <span class="nick">danotop</span>
+        <p class="message">duckinator, so for now i think i'm going to ignore pinning and work on mocking up a channel</p>
+      </li>
+    
+      <li>
+        <span class="stamp">[00:26]</span>
+        <span class="nick">duckinator</span>
+        <p class="message">danotop: alright</p>
+      </li>
+      
+    </ul>
+    
+    <form class="sendmsg">
+      <input type="text">
+    </form>
+  
+  </section>
+    
 </body>
 </html>
 
