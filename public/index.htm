@@ -1,0 +1,214 @@
+<html>
+<head>
+  <title>Bubblegum</title>
+  <link href='http://fonts.googleapis.com/css?family=Comfortaa:400,700|Press+Start+2P' rel='stylesheet' type='text/css'>
+  <style>
+    
+    body {
+      height: 100%;
+      background: #333;
+      font-family: "Ubuntu Sans", sans-serif;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+    
+    
+    header {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      height: 30px;
+      
+      padding: 5px 10px;
+    }
+    
+    header h1 {
+      float: left;
+      margin: 0;
+      font-size: 24px;
+      
+      color: #fff;
+      text-shadow: 0 0 2px #000, 1px 1px 1px #000;
+    }
+    
+    header #status {
+      float: right;
+      color: #ccc;
+      font-size: 12px;
+    }
+    
+    
+    #tabbar {
+      position: absolute;
+      left: 0;
+      top: 30px;
+      width: 185px;
+      bottom: 0;
+      
+      margin: 15px 0 15px 15px;
+    }
+    
+    #tabbar ul {
+      margin: 0;
+      padding: 0;
+    }
+    
+    #tabbar li {
+      list-style: none;
+    }
+    
+    #tabbar a {
+      list-style: none;
+      display: block;
+      padding: 5px;
+      border-top: 1px solid #999;
+      border-bottom: 1px solid #999;
+      margin-bottom: -1px;
+      background: -moz-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 100%);
+      
+      font-size: 12px;
+      color: #ccc;
+      text-shadow: 0 0 2px #000, 1px 1px 1px #000;
+      text-decoration: none;
+    }
+    
+    #tabbar ul ul a {
+      background: -moz-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+    }
+    
+    #tabbar>ul>li {
+      padding-bottom: 15px;
+    }
+    
+    #tabbar li a.unread {
+      background: -moz-linear-gradient(left, rgba(150,150,255,0) 0%, rgba(150,150,255,0.5) 100%);
+      color: #fff;
+    }
+    
+    #tabbar li a.mention {
+      background: -moz-linear-gradient(left, rgba(255,150,150,0) 0%, rgba(255,150,150,0.5) 100%);
+      color: #fff;
+    }
+    
+    #tabbar li a.active {
+      background: -moz-linear-gradient(left, rgba(150,255,150,0) 0%, rgba(150,255,150,0.8) 100%);
+      color: #fff;
+      position: relative;
+      right: -10px;
+    }
+    
+    #tabbar a span {
+      float: right;
+      text-shadow: 0 0 2px #000, 0 0 1px #000, 1px 1px 1px #000;
+    }
+    
+    #tabbar ul ul {
+      padding-left: 1.5em;
+    }
+    
+    #tabbar>ul>li:hover>a {
+      color: #fff;
+    }
+    
+    #tabbar a:hover {
+      color: #fff;
+      border-color: #fff;
+      position: relative;
+      z-index: 1;
+    }
+    
+
+    section {
+      position: absolute;
+      top: 30px;
+      left: 210px;
+      right: 0;
+      bottom: 0;
+      
+      margin: 10px 10px 10px 0;
+      padding: 10px;
+      background: white;
+    }
+    
+  </style>
+  
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+  <script>
+    $(function() {
+      $.socket = io.connect();
+      
+      $.socket.on('connect', function() {
+        //$.socket.emit('start', 'irc');
+        //$.socket.emit('event', ['irc', 'nick', 'bubblegum']);
+      });
+      
+      $('#login form').submit(function(e) {
+        $('#login').css('left','150%');
+        $('#loading').css('opacity','1');
+        
+        data = {
+          username: $('#login_username').attr('value'),
+          password: $('#login_password').attr('value')
+        };
+        
+        $.socket.emit('login', data);
+        
+        return false;
+      });
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <h1>bubblegum</h1>
+    <div id="status">
+      connected to <span>2</span> services
+      | danopia <img src="http://gravatar.com/avatar/8659be3fd35757561943aa00a28c8e0a?s=30">
+    </div>
+  </header>
+  
+  <navigation id="tabbar">
+    <ul>
+      <li>
+        <a href="#" class="online"><span>danopia</span>TenthBit</a>
+        <ul>
+          <li><a href="#" class="unread"><span>14</span>#offtopic</a></li>
+          <li><a href="#">#programming</a></li>
+          <li><a href="#" class="mention"><span>2</span>duckinator</a></li>
+        </ul>
+      </li>
+      
+      <li>
+        <a href="#" class="online"><span>danopia</span>freenode</a>
+        <ul>
+          <li><a href="#">#botters</a></li>
+          <li><a href="#" class="active">#defocus</a></li>
+          <li><a href="#" class="unread"><span>563</span>#freenode</a></li>
+          <li><a href="#">#ooc-lang</a></li>
+        </ul>
+      </li>
+      
+      <li>
+        <a href="#" id="connecttab">Add service</a>
+      </li>
+    </ul>
+  </navigation>
+  
+  <section id="connect">
+    <h1>Add Service to Bubblegum</h1>
+    <p>Please enter your account information to access it via Bubblegum.</p>
+    <form>
+      <p><label>Protocol:</label> <input id="connect_protocol" type="text" value="irc"></p>
+      <p><label>Username:</label> <input id="login_username" type="text"></p>
+      <p><label>Password:</label> <input id="login_password" type="password"></p>
+      <p><input type="submit" value="Add"></p>
+    </form>
+  </section>
+  
+</body>
+</html>
+
