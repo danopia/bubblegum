@@ -1,15 +1,19 @@
 var Client = require('./../node-irc').Client,
 
-    chan = '#offtopic',
-    host = 'irc.tenthbit.net';
+    chan = '#bubblegum',
+    host = 'irc.tenthbit.net',
+    
+    number = 1;
 
 exports.start = function(socket, callback) {
   var client, server;
 
   return {
     nick: function(nick) {
-      client = new Client(nick);
+      client = new Client(nick + number);
       server = client.connect(host);
+      
+      number++;
 
       client.on('PING', function(e) {
         e.server.send('pong', e.params);
