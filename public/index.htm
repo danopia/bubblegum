@@ -144,6 +144,12 @@
       
       margin: 10px 10px 10px 0;
       background: #ddd;
+      
+      display: none;
+    }
+    
+    section.active {
+      display: block;
     }
     
     .topic {
@@ -216,18 +222,99 @@
   <script>
     $(function() {
       $.socket = io.connect();
-      
       $.tab = $('a.active');
+      $.view = $('section.active');
+      
+      $.views = {};
+      $.getView = function(servid, tabid) {
+        if (!$.views[servid])
+          $.views[servid] = {};
+        
+        if ($.views[servid][tabid])
+          return $.views[servid][tabid];
+        
+        var $tab = $.views[servid][tabid] = $('<section/>')
+          , $form = $('<form/>').append($('<input/>').attr('type', 'text'));
+        
+        $tab.append($('<h3/>').addClass('topic'));
+        $tab.append($('<ul/>').addClass('scrollback')); // <script>
+        $tab.append($form.addClass('sendmsg'));
+        
+        $tab.attr('data-service', servid);
+        $tab.attr('data-viewid', tabid);
+        
+        $('body').append($tab);
+        console.log($.views);
+        return $tab;
+      };
       
       $.socket.on('connect', function() {
-        $.socket.emit('start', 'irc');
-        $.socket.emit('event', ['irc', 'nick', 'bubblegum']);
+        // ready
       });
       
-      $('navigation a').click(function(e) {
+      $.socket.on('addservice', function(data) {
+        var $section = $('<li/>')
+          , $tab = $('<a/>').attr('href', '#');
+        
+        $tab.append($('<span/>').text(data[3])); // <script>
+        $tab.append($(document.createTextNode(data[2])));
+        
+        $section.append($tab);
+        $section.append($('<ul/>')); // <script>
+        
+        $tab.attr('data-viewid', -1);
+        $tab.attr('data-service', data[0]);
+        $section.attr('data-service', data[0]);
+        $section.attr('data-protocol', data[1]);
+        
+        console.log($section);
+        
+        $('#tabbar>ul>li:last').before($section);
+      });
+
+      $.socket.on('event', function(data) {
+        var $section = $('#tabbar li[data-service=' + data[0] + ']');
+        
+        if (data[2] == 'addtab') {
+          var $tab = $('<a/>').attr('href', '#')
+            , $item = $('<li/>').append($tab);
+          
+          $tab.append($('<span/>')); // <script>
+          $tab.append($(document.createTextNode(data[3].label)));
+          
+          $tab.attr('data-service', data[0]);
+          $tab.attr('data-viewid', data[1]);
+          $tab.attr('data-unread', 0);
+          $section.find('ul').append($item);
+        }
+        
+        var $tab = $section.find('a[data-viewid=' + data[1] + ']');
+        var $view = $.getView(data[0], data[1]);
+          
+        console.log(data);
+        if (data[2] == 'connect') {
+          logLine($view, data[4], '***', 'Connected. Now logging in...');
+        } else if (data[2] == 'join') {
+          logLine($view, data[4], '*', data[3] + ' joined');
+        //} else if (data[2] == 'names') {
+        //  logLine($view, data[4], '***', 'users on ' + data[3][0] + ': ' + data[3][1]);
+        } else if (data[2] == 'message') {
+          logLine($view, data[4], data[3][0], data[3][1]);
+        }
+      });
+      
+      $('navigation').on('click', 'a', function(e) {
         $.tab.removeClass('active');
-        $.tab = $(e.target);
+        $.view.removeClass('active');
+        
+        $.tab = $(e.currentTarget);
+        if ($.tab.attr('id') == 'addservicetab')
+          $.view = $('#addserviceview');
+        else
+          $.view = $.getView($.tab.attr('data-service'), $.tab.attr('data-viewid'));
+        
         $.tab.addClass('active');
+        $.view.addClass('active');
         
         var $span = $.tab.find('span');
         if ($.tab.hasClass('mention')) {
@@ -236,65 +323,45 @@
         }
         if ($.tab.hasClass('unread')) {
           $.tab.removeClass('unread');
+          $.tab.attr('data-unread', 0);
           $span.text('');
         }
-        
-        return false;
       });
       
-      /*
-      $('#login form').submit(function(e) {
-        $('#login').css('left','150%');
-        $('#loading').css('opacity','1');
+      $('#addserviceview form').submit(function(e) {
+        e.preventDefault();
         
-        data = {
-          username: $('#login_username').attr('value'),
-          password: $('#login_password').attr('value')
-        };
-        
-        $.socket.emit('login', data);
-        
-        return false;
+        var json = JSON.parse($(e.target).find('input[name=json]').val());
+        $.socket.emit('addservice', json);
       });
-      */
       
-      var $form = $('form.sendmsg'),
-          $scroll = $('ul.scrollback'),
-          $input = $form.find('input');
+      logLine = function($view, time, nick, message) {
+        if ($view != $.view) {
+          var $tab = $('#tabbar a[data-service=' + $view.attr('data-service') + '][data-viewid=' + $view.attr('data-viewid') + ']');
           
-      $scroll.text('');
+          if (!$tab.hasClass('unread'))
+            $tab.addClass('unread');
           
-      logLine = function(time, nick, message) {
+          var unread = Number($tab.attr('data-unread')) + 1;
+          $tab.attr('data-unread', unread);
+          $tab.find('span').text(unread);
+        }
+        
         var $line = $('<li/>');
         $line.append($('<span/>').addClass('stamp').text(time));
         $line.append($('<span/>').addClass('nick').text(nick));
-        $line.append($('<p/>').addClass('message').text(message));
-        
-        $scroll.append($line);
+        $line.append($('<p/>').addClass('message').text(message)); // <script>
+        $view.find('ul.scrollback').append($line);
       }
 
-      $form.on('submit', function(event) {
+      $('body').on('submit', 'form.sendmsg', function(event) {
         event.preventDefault();
 
-        logLine('[XX:XX:XX]', 'you', $input.val());
-        $.socket.emit('event', ['irc', 'message', $input.val()]);
+        var $input = $(event.target).find('input');
+        logLine($.view, '[pending.]', 'you', $input.val());
+        $.socket.emit('event', [$.tab.attr('data-service'), 'message', [$.tab.attr('data-viewid'), $input.val()]]);
         $input.val('');
       });
-
-      $.socket.on('event', function(stuff) {
-        if (stuff[0] != 'irc') { return; }
-
-        if (stuff[1] == 'connected') {
-          logLine('[XX:XX:XX]', '***', 'connecting to port_6667 of #bubblegum irc');
-          logLine('[XX:XX:XX]', '***', 'loading .ircr version 2.9.5+Cr17f+F08');
-        } else if (stuff[1] == 'names') {
-          logLine('[XX:XX:XX]', '***', 'users on ' + stuff[2][0] + ': ' + stuff[2][1]);
-        } else if (stuff[1] == 'message') {
-          logLine('[XX:XX:XX]', stuff[2].originNick, stuff[2].params[1]);
-        }
-      });
-
-      $input.focus();
     });
   </script>
 </head>
@@ -309,6 +376,7 @@
   
   <navigation id="tabbar">
     <ul>
+      <!--
       <li>
         <ul>
           <li class="pinned"><a href="#" class="unread"><span>14</span>10b/#offtopic</a></li>
@@ -334,350 +402,21 @@
           <li><a href="#"><span></span>#ooc-lang</a></li>
         </ul>
       </li>
+      -->
       
       <li>
-        <a href="#" class="active" id="connecttab"><span></span>Add service</a>
+        <a href="#" class="active" id="addservicetab"><span></span>Add service</a>
       </li>
     </ul>
   </navigation>
   
-  <section id="connect" style="display: none;">
+  <section id="addserviceview" class="active">
     <h1>Add Service to Bubblegum</h1>
     <p>Please enter your account information to access it via Bubblegum.</p>
     <form>
-      <p><label>Protocol:</label> <input id="connect_protocol" type="text" value="irc"></p>
-      <p><label>Username:</label> <input id="login_username" type="text"></p>
-      <p><label>Password:</label> <input id="login_password" type="password"></p>
+      <p><label>JSON object:</label> <input name="json" type="text" value="{}"></p>
       <p><input type="submit" value="Add"></p>
     </form>
-  </section>
-  
-  <section>
-    <h3 class="topic">TRAILMIX | #offtopic Television schedule: Futurama: Wednesday</h3>
-    
-    <ul class="scrollback">
-    
-      <li>
-        <span class="stamp">[00:23]</span>
-        <span class="nick">danotop</span>
-        <p class="message">relrod, i'm not worrying about that right now, but it's next on the list</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:23]</span>
-        <span class="nick">danotop</span>
-        <p class="message">relrod, it'll probably be xchaty</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:24]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">danotop: also, i'm ending up going the exact opposite of what you're doing wrt to where i'm prototyping: i have to use chrome/ium-specific features :P</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:25]</span>
-        <span class="nick">relrod</span>
-        <p class="message">there's not really any good reason to use browser-specific things anymore :|</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">there we go</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">even less of my tooth is still in my face!</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">relrod: unless your entire thing is a proof-of-concept that uses features so new that they don't exist in any browser except one</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">YUMMY BLOOD</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">danotop</span>
-        <p class="message">duckinator, so for now i think i'm going to ignore pinning and work on mocking up a channel</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">danotop: alright</p>
-      </li>
-      
-      
-      
-    
-      <li>
-        <span class="stamp">[00:23]</span>
-        <span class="nick">danotop</span>
-        <p class="message">relrod, i'm not worrying about that right now, but it's next on the list</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:23]</span>
-        <span class="nick">danotop</span>
-        <p class="message">relrod, it'll probably be xchaty</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:24]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">danotop: also, i'm ending up going the exact opposite of what you're doing wrt to where i'm prototyping: i have to use chrome/ium-specific features :P</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:25]</span>
-        <span class="nick">relrod</span>
-        <p class="message">there's not really any good reason to use browser-specific things anymore :|</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">there we go</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">even less of my tooth is still in my face!</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">relrod: unless your entire thing is a proof-of-concept that uses features so new that they don't exist in any browser except one</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">YUMMY BLOOD</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">danotop</span>
-        <p class="message">duckinator, so for now i think i'm going to ignore pinning and work on mocking up a channel</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">danotop: alright</p>
-      </li>
-      
-      
-      
-      
-    
-      <li>
-        <span class="stamp">[00:23]</span>
-        <span class="nick">danotop</span>
-        <p class="message">relrod, i'm not worrying about that right now, but it's next on the list</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:23]</span>
-        <span class="nick">danotop</span>
-        <p class="message">relrod, it'll probably be xchaty</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:24]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">danotop: also, i'm ending up going the exact opposite of what you're doing wrt to where i'm prototyping: i have to use chrome/ium-specific features :P</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:25]</span>
-        <span class="nick">relrod</span>
-        <p class="message">there's not really any good reason to use browser-specific things anymore :|</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">there we go</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">even less of my tooth is still in my face!</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">relrod: unless your entire thing is a proof-of-concept that uses features so new that they don't exist in any browser except one</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">YUMMY BLOOD</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">danotop</span>
-        <p class="message">duckinator, so for now i think i'm going to ignore pinning and work on mocking up a channel</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">danotop: alright</p>
-      </li>
-      
-      
-      
-      
-    
-      <li>
-        <span class="stamp">[00:23]</span>
-        <span class="nick">danotop</span>
-        <p class="message">relrod, i'm not worrying about that right now, but it's next on the list</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:23]</span>
-        <span class="nick">danotop</span>
-        <p class="message">relrod, it'll probably be xchaty</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:24]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">danotop: also, i'm ending up going the exact opposite of what you're doing wrt to where i'm prototyping: i have to use chrome/ium-specific features :P</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:25]</span>
-        <span class="nick">relrod</span>
-        <p class="message">there's not really any good reason to use browser-specific things anymore :|</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">there we go</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">even less of my tooth is still in my face!</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">relrod: unless your entire thing is a proof-of-concept that uses features so new that they don't exist in any browser except one</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">YUMMY BLOOD</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">danotop</span>
-        <p class="message">duckinator, so for now i think i'm going to ignore pinning and work on mocking up a channel</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">danotop: alright</p>
-      </li>
-      
-      
-      
-      
-    
-      <li>
-        <span class="stamp">[00:23]</span>
-        <span class="nick">danotop</span>
-        <p class="message">relrod, i'm not worrying about that right now, but it's next on the list</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:23]</span>
-        <span class="nick">danotop</span>
-        <p class="message">relrod, it'll probably be xchaty</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:24]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">danotop: also, i'm ending up going the exact opposite of what you're doing wrt to where i'm prototyping: i have to use chrome/ium-specific features :P</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:25]</span>
-        <span class="nick">relrod</span>
-        <p class="message">there's not really any good reason to use browser-specific things anymore :|</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">there we go</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">even less of my tooth is still in my face!</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">relrod: unless your entire thing is a proof-of-concept that uses features so new that they don't exist in any browser except one</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">curtis</span>
-        <p class="message">YUMMY BLOOD</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">danotop</span>
-        <p class="message">duckinator, so for now i think i'm going to ignore pinning and work on mocking up a channel</p>
-      </li>
-    
-      <li>
-        <span class="stamp">[00:26]</span>
-        <span class="nick">duckinator</span>
-        <p class="message">danotop: alright</p>
-      </li>
-      
-    </ul>
-    
-    <form class="sendmsg">
-      <input type="text">
-    </form>
-  
   </section>
     
 </body>

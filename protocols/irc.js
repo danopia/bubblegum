@@ -1,39 +1,73 @@
-var Client = require('./../node-irc').Client,
+var Client = require('./../node-irc').Client;
 
-    chan = '#bubblegum',
-    host = 'irc.tenthbit.net',
+exports.start = function(socket, data, callback) {
+  var client = new Client(data.nick)
+    , server = client.connect(data.server);
+  
+  data.tabs = {};
+  data.tabCount = 0;
+  data.labels = [];
+  var getTab = function (label) {
+    if (data.tabs[label])
+      return data.tabs[label];
     
-    number = 1;
+    var tab = data.tabs[label] = {
+      label: label,
+      view: data.tabCount
+    }
+    
+    data.labels.push(label);
+    
+    data.tabCount++;
+    
+    callback('addtab', tab.view, tab);
+    return tab;
+  };
+  
+  
+  client.on('PING', function(e) {
+    e.server.send('pong', e.params);
+  });
 
-exports.start = function(socket, callback) {
-  var client, server;
+  client.on('001', function(e) {
+    data.nick = e.params[0];
+    callback('connect', -1, data.nick);
+    
+    data.channels.forEach(function (channel) {
+      e.server.join(channel);
+    });
+  });
+  
+  client.on('JOIN', function(e) {
+    var chan = (e.params[0][0] == ':') ? e.params[0].substr(1) : e.params[0];
+    callback('join', getTab(chan).view, e.originNick);
+  });
+
+  /*
+  client.on('353', function(e) {
+    callback('names', [e.params[2], e.params[3]]);
+  });
+  */
+
+  client.on('PRIVMSG', function(e) {
+    var label = (e.params[0][0] == '#') ? e.params[0] : e.originNick;
+    callback('message', getTab(label).view, [e.originNick, e.params[1]]);
+  });
 
   return {
-    nick: function(nick) {
-      client = new Client(nick + number);
-      server = client.connect(host);
-      
-      number++;
-
-      client.on('PING', function(e) {
-        e.server.send('pong', e.params);
-      });
-
-      client.on('001', function(e) {
-        callback('connected');
-        e.server.join(chan);
-      });
-
-      client.on('353', function(e) {
-        callback('names', [e.params[2], e.params[3]]);
-      });
-
-      client.on('PRIVMSG', function(e) {
-        callback('message', e);
-      });
+    data: data,
+    
+    message: function(info) {
+      var target = data.labels[info[0]];
+      server.message(target, info[1]);
+      callback('ack', info[0], ['message', data.nick, info[1]]);
     },
-    message: function(message) {
-      server.message(chan, message);
+    
+    sendTabs: function(servid, socket) {
+      data.labels.forEach(function (label) {
+        var tab = data.tabs[label];
+        socket.emit('event', [servid, tab.view, 'addtab', tab, '[XX:XX:XX]']);
+      });
     }
   };
 }
