@@ -28,7 +28,8 @@ io.sockets.on('connection', function (socket) {
     profiles[ip] = socket.profile = {
       clients: [socket],
       services: [],
-      account: ip
+      account: ip,
+      ident: ip.split('.').map(function(byte){return ((Number(byte)<15)?'0':'') + Number(byte).toString(16)}).join('')
     }
   }
 

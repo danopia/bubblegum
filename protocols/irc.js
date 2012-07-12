@@ -1,8 +1,13 @@
-var Client = require('./../node-irc').Client;
+var Client = require('./../node-irc').Client
+  , identd = require('./../identd');
 
 exports.start = function(socket, data, callback) {
   var client = new Client(data.nick)
     , server = client.connect(data.server);
+  
+  server.on('connect', function () {
+    identd.register(server, socket.profile.ident);
+  });
   
   data.tabs = {};
   data.tabCount = 0;
