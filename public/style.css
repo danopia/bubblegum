@@ -1,0 +1,327 @@
+body {
+  height: 100%;
+  background: #123;
+  background: -moz-linear-gradient(top, #1f354f 0%, #121518 150%);
+  font-family: "Ubuntu Sans", sans-serif;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+
+/******************************************************************************
+ *** Global header
+ ***/
+header {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 30px;
+  
+  padding: 5px 10px;
+}
+
+header h1 {
+  float: left;
+  margin: 0;
+  font-size: 24px;
+  
+  color: #fff;
+  text-shadow: 0 0 2px #000, 1px 1px 1px #000;
+  
+  padding-left: 33px;
+  background: url(/images/gum.png) no-repeat left center;
+}
+
+#status {
+  text-align: right;
+  color: #ccc;
+  font-size: 12px;
+}
+
+#status img {
+  float: right;
+  padding-left: 5px;
+}
+#status p {
+  margin: 0;
+}
+
+
+/******************************************************************************
+ *** Main tab bar
+ ***/
+navigation {
+  font-size: 12px;
+  position: absolute;
+  left: 0;
+  top: 30px;
+  width: 190px;
+  bottom: 0;
+  
+  margin: 10px 0 10px 10px;
+}
+
+navigation ul {
+  margin: 0;
+  padding: 0;
+}
+
+navigation li {
+  list-style: none;
+}
+
+navigation a {
+  list-style: none;
+  display: block;
+  padding: 5px;
+  border-top: 1px solid #999;
+  border-bottom: 1px solid #999;
+  margin-bottom: -1px;
+  background: -moz-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 100%);
+  
+  font-size: 12px;
+  color: #ccc;
+  text-shadow: 0 0 2px #000, 1px 1px 1px #000;
+  text-decoration: none;
+}
+
+navigation ul ul li {
+  padding-left: 1.5em;
+}
+
+navigation ul ul li:hover, navigation ul ul li.pinned {
+  background: url(/images/pin-red.png) 0 center no-repeat;
+}
+navigation ul ul li.pinned:hover {
+  background: url(/images/pin-gray.png) 0 center no-repeat;
+}
+
+navigation ul ul a {
+  background: none;
+}
+
+navigation ul ul a:hover {
+  background: -moz-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+}
+
+navigation>ul>li {
+  padding-bottom: 15px;
+}
+
+navigation li a.unread {
+  background: -moz-linear-gradient(left, rgba(150,150,255,0) 0%, rgba(150,150,255,0.5) 100%) !important;
+  color: #fff;
+}
+
+navigation li a.mention {
+  background: -moz-linear-gradient(left, rgba(255,150,150,0) 0%, rgba(255,150,150,0.5) 100%) !important;
+  color: #fff;
+}
+
+navigation li a.active {
+  background: -moz-linear-gradient(left, rgba(150,255,150,0) 0%, rgba(150,255,150,0.8) 100%) !important;
+  color: #fff;
+  position: relative;
+}
+
+navigation a span {
+  float: right;
+  text-shadow: 0 0 2px #000, 0 0 1px #000, 1px 1px 1px #000;
+}
+
+navigation ul ul {
+}
+
+navigation>ul>li:hover>a {
+  color: #fff;
+}
+
+navigation a:hover {
+  color: #fff;
+  border-color: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+
+/******************************************************************************
+ *** Main views
+ ***/
+section.view {
+  display: none;
+}
+section.active {
+  display: block;
+}
+
+section.view {
+  position: absolute;
+  top: 30px;
+  left: 200px;
+  right: 0;
+  bottom: 0;
+  
+  margin: 10px 10px 10px 0;
+  background: #ddd;
+}
+
+.topic {
+  border-bottom: 1px solid gray;
+  text-align: center;
+  margin: 0;
+  padding: 2px;
+  font-size: 100%;
+  font-weight: normal;
+  font-family: 'Ubuntu Mono', fixed;
+}
+
+.scrollback {
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 22px;
+  bottom: 27px;
+  
+  overflow: auto;
+}
+
+.scrollback li {
+  list-style: none;
+  clear: left;
+  padding: 0 10px;
+  font-family: 'Anonymous Pro', 'Inconsolata', 'Droid Sans Mono', monospace;
+}
+
+.scrollback li:hover {
+  background: #eec;
+}
+
+.scrollback span.stamp {
+  display: block;
+  width: 100px;
+  float: left;
+  text-align: left;
+}
+
+.scrollback span.nick {
+  width: 100px;
+  float: left;
+  text-align: right;
+}
+
+.scrollback .message {
+  display: block;
+  margin-top: 0;
+  margin-bottom: 0;
+  border-left: 1px solid gray;
+  margin-left: 205px;
+  padding-left: 5px;
+}
+
+.sendmsg input {
+  position: absolute;
+  border-width: 0;
+  padding: 5px;
+  border-top: 1px solid gray;
+  font-family: 'Ubuntu Mono', fixed;
+  width: 100%;
+  bottom: 0;
+}
+
+
+/******************************************************************************
+ *** Authorize dialogs
+ ***/
+#authorize {
+  position: absolute;
+  left: 50%;
+  width: 400px;
+  top: 50%;
+  height: 300px;
+  
+  margin: -150px 0 0 -200px;
+}
+
+#authorize h2 {
+  padding: 5px 0;
+  margin: 0;
+  text-align: center;
+  text-transform: lowercase;
+  font-weight: normal;
+  color: #999;
+  font-size: 28px;
+  text-shadow: 0 0 2px #000, 0 0 1px #000, 1px 1px 1px #000;
+}
+
+#authorize p.links {
+  margin: 5px 0 0 0;
+  text-align: center;
+  color: #333;
+  font-size: 12px;
+}
+
+#authorize p.links a {
+  text-transform: lowercase;
+  color: #999;
+  text-shadow: 0 0 2px #000, 0 0 1px #000, 1px 1px 1px #000;
+}
+
+section.modal {
+  padding: 1px 15px;
+  -moz-box-sizing: border-box;
+  
+  background: #ddd;
+  background: -moz-linear-gradient(top, rgb(200,200,200) 0%, rgb(210,210,210) 25%, rgb(150,150,150) 100%);
+  
+  box-shadow: 0 5px 25px 5px rgba(0,0,0,0.5);
+  position: relative;
+}
+
+section.modal label {
+  display: block;
+}
+section.modal input[type=text], section.modal input[type=password] {
+  width: 100%;
+  border: 1px solid #999;
+  font-size: 135%;
+  padding: 5px;
+  background: white;
+}
+section.modal input[type=button], section.modal input[type=submit] {
+  width: 50%;
+  position: relative;
+  left: 50%;
+  font-size: 135%;
+  padding: 5px;
+  background: #ccc;
+  
+  border: 1px outset #999;
+}
+
+.modal .pulser {
+  position: absolute;
+  
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  
+  background: rgba(10,20,30,0.75);
+  z-index: 100;
+}
+
+.modal .pulser:after {
+  content: 'loading...';
+  
+  position: absolute;
+  color: #ccc;
+  top: 45%;
+  text-align: center;
+  width: 100%;
+  font-size: 28px;
+  text-shadow: 0 0 2px #000, 0 0 1px #000, 1px 1px 1px #000;
+}
+
