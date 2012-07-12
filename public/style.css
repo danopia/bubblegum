@@ -240,13 +240,12 @@ section.view {
   left: 50%;
   width: 400px;
   top: 50%;
-  height: 300px;
   
-  margin: -150px 0 0 -200px;
+  margin: 0 0 0 -200px;
 }
 
 #authorize h2 {
-  padding: 5px 0;
+  padding: 0 0 10px 0;
   margin: 0;
   text-align: center;
   text-transform: lowercase;
@@ -257,7 +256,7 @@ section.view {
 }
 
 #authorize p.links {
-  margin: 5px 0 0 0;
+  margin: 15px 0 0 0;
   text-align: center;
   color: #333;
   font-size: 12px;
@@ -266,6 +265,12 @@ section.view {
 #authorize p.links a {
   text-transform: lowercase;
   color: #999;
+  text-shadow: 0 0 2px #000, 0 0 1px #000, 1px 1px 1px #000;
+}
+
+#authorize p.links span {
+  text-transform: lowercase;
+  color: #666;
   text-shadow: 0 0 2px #000, 0 0 1px #000, 1px 1px 1px #000;
 }
 
