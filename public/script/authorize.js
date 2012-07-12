@@ -1,157 +1,91 @@
 $.authorize = {
-  pages: [],
-  
-  init: function (title) {
-    if (this.$dom)
-      this.$dom.remove();
+  open: function (e) {
+    var data = this.data = e.data;
     
-    this.$title = $('<h2/>').text(title);
-    this.$section = $('<section/>').addClass('active modal');
-    this.$links = $('<p/>').addClass('links');
-    
-    this.buildLinks();
-    
+    var $links;
     this.$dom = $('<div/>').attr('id', 'authorize');
-    this.$dom.append(this.$title, this.$section, this.$links);
+    this.$dom.append(         $('<h2/>').text(data.heading));
+    this.$dom.append(         $('<section/>').addClass('active modal').append($('<form/>')));
+    this.$dom.append($links = $('<p/>').addClass('links'));
     
-    $('body').append(this.$dom);
-  },
-  
-  buildLinks: function () {
-    this.$links.empty();
-
-    for (var i = 0; i < this.pages.length; i++) {
-      if (i > 0)
-        this.$links.append(' | ');
+    $.each(data.pages, function (i, page) {
+      if (i > 0) $links.append(' | ');
       
-      var page = this.pages[i];
-      
-      if (page == this.page)
-        this.$links.append($('<span/>').text(page.title));
-      else
-        this.$links.append($('<a/>').attr('href', '#').text(page.title).attr('data-id', i));
-    }
+      page.$link = $('<a/>').attr('href', '#').text(page.title).attr('data-id', i);
+      page.$span = $('<span/>').text(page.title).attr('data-id', i);
+      $links.append(page.$link);
+    });
     
-    this.$links.on('click', 'a', function (e) {
+    $links.on('click', 'a', function (e) {
+      e.preventDefault();
+      $.authorize.switchTo($(e.target).attr('data-id'));
+    });
+    
+    this.$dom.find('form').submit(function (e) {
       e.preventDefault();
       
-      var page = $.authorize.pages[$(e.target).attr('data-id')];
-      $.authorize.switchTo(page);
+      var values = {};
+      $.each($(e.target).serializeArray(), function(i, field) {
+        values[field.name] = field.value;
+      });
+      
+      $.authorize.lock();
+      $.socket.emit('dialog', {action: 'submit', id: 'auth', page: $.authorize.page.name, fields: values});
     });
+    
+    $('body').append(this.$dom);
+    
+    $links.find('a:first').click();
   },
   
   close: function () {
-    this.$dom.animate({height: 0, opacity: 0, 'margin-top': 0}, function () {
-      this.$dom.remove();
+    this.$dom.animate({height: 0, opacity: 0, 'margin-top': 0}, function () { $(this).remove(); });
+  },
+  
+  switchTo: function (id) {
+    if (this.page) this.page.$span.replaceWith(this.page.$link);
+    this.page = this.data.pages[id];
+    this.page.$link.replaceWith(this.page.$span);
+    
+    var $form = this.$dom.find('form').empty();
+    
+    $.each(this.page.fields, function (i, field) {
+      var $p = $('<p/>');
+      $p.append($('<label/>').text(field[0]).attr('for', field[1]));
+      $p.append($('<input/>').attr({type: (field[2] ? field[2].type : null) || 'text', name: field[1]}));
+      $form.append($p);
     });
     
-    delete this.$dom;
+    $form.append($('<p/>').append($('<input/>').attr('type', 'submit').val(this.page.title)));
+    $form.find(':input:first').focus();
+    
+    this.$dom.css({'margin-top': -this.$dom.innerHeight() / 2});
   },
   
-  addPage: function (title, builder) {
-    this.pages.push({title: title, builder: builder});
-    
-    if (this.$links)
-      this.buildLinks();
+  lock: function () {
+    this.$dom.find('input').attr('disabled', true);
+    this.$dom.find('form').append($('<div/>').addClass('pulser').fadeIn(100));
   },
   
-  switchTo: function (page) {
-    this.page = page;
-    this.buildLinks();
+  flash: function (e) {
+    var $p = $('<p/>').addClass('flash').text(e.message);
+    this.$dom.prepend($p);
+    $p.css({top: -$p.innerHeight() - 20});
     
-    this.form.setup(this.$section);
-    page.builder(this.form);
-    
-    this.$dom.css({'margin-top': -$.authorize.$dom.innerHeight() / 2});
+    setTimeout(function () {
+      $p.fadeOut(function () { $(this).remove(); });
+    }, 2500);
   },
   
-  form: {
-    setup: function ($section) {
-      this.$form = $('<form/>');
-      
-      $section.empty();
-      $section.append(this.$form);
-    },
-  
-    lock: function () {
-      this.$form.find('input').attr('disabled', true);
-      this.$form.append($('<div/>').addClass('pulser'));
-    },
-    
-    unlock: function () {
-      var $pulser = this.$form.find('.pulser');
-      $pulser.animate({opacity: 0}, function () {
-        $pulser.remove();
-      });
-      
-      this.$form.find('input').attr('disabled', null);
-    },
-      
-    field: function (label, name, type) {
-      var $p = $('<p/>');
-      $p.append($('<label/>').text(label).attr('for', name));
-      $p.append($('<input/>').attr({type: type || 'text', name: name}));
-      this.$form.append($p);
-    },
-    
-    button: function (label) {
-      this.$form.append($('<p/>').append($('<input/>').attr('type', 'submit').val(label)));
-    },
-    
-    submit: function (callback) {
-      this.$form.submit(function (e) {
-        e.preventDefault();
-        
-        $.authorize.form.lock();
-        
-        var values = {};
-        $.each($(e.target).serializeArray(), function(i, field) {
-          values[field.name] = field.value;
-        });
-
-        callback(values, $(e.target));
-      });
-    }
+  unlock: function () {
+    var $pulser = this.$dom.find('.pulser');
+    $pulser.fadeOut(100, function () { $pulser.remove(); });
+    this.$dom.find('input').attr('disabled', null);
   }
 };
 
-$.authorize.addPage('log in', function (form) {
-  form.field('username', 'user');
-  form.field('password', 'pass', 'password');
-  form.button('log in');
-  
-  form.submit(function (fields) {
-    $.uplink.account('login', fields);
-  });
-});
-
-$.authorize.addPage('register', function (form) {
-  form.field('username', 'user');
-  form.field('email address', 'email');
-  form.field('password', 'pass', 'password');
-  form.field('password again', 'passconf', 'password');
-  form.button('create account');
-  
-  form.submit(function (fields) {
-    if (fields.pass != fields.passconf) {
-      form.unlock();
-      return;
-    }
-    
-    $.uplink.account('register', fields);
-  });
-});
-
-$.authorize.addPage('recover password', function (form) {
-  form.field('username', 'user');
-  form.button('recover password');
-  
-  form.submit(function (fields) {
-    $.uplink.account('recover', fields);
-  });
-});
-
 $(function () {
-  $.authorize.init('welcome to bubblegum');
-  $.authorize.switchTo($.authorize.pages[0]);
+  $.socket.on('dialog', function (e) {
+    $.authorize[e.action](e);
+  });
 });

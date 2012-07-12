@@ -47,13 +47,38 @@ io.sockets.on('connection', function (socket) {
 
   socket.on('event', function (data) {
     var service = socket.profile.services[data[0]];
-    
-    if (service)
-      service[data[1]](data[2]);
+    if (service) service[data[1]](data[2]);
   });
   
   socket.profile.services.forEach(function (service, servid) {
     socket.emit('addservice', [servid, service.data.protocol, service.data.server, service.data.nick]);
     service.sendTabs(servid, socket);
   });
+  
+  socket.on('logout', function (e) {
+    socket.emit('logout');
+    socket.emit('dialog', {action: 'open', id: 'auth', data: require('./data/authorize')});
+  });
+  
+  socket.emit('logout');
+  socket.emit('dialog', {action: 'open', id: 'auth', data: require('./data/authorize')});
+  
+  socket.on('dialog', function (e) {
+    if (e.action == 'submit') {
+      if (e.fields.user == 'danopia') {
+        socket.emit('dialog', {action: 'close', id: 'auth'});
+        var profile = require('./profiles/danopia');
+        profile.emailmd5 = require('crypto').createHash('md5').update(profile.email).digest('hex');
+        socket.emit('login', profile);
+      } else {
+        socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Invalid username or password.'});
+        socket.emit('dialog', {action: 'unlock', id: 'auth'});
+      }
+    } else if (e.action == 'load') {
+      socket.emit('dialog', {action: 'open', id: e.id, data: {heading: 'add new service', pages: [
+        require('./protocols/irc').addpage,
+        {"name":"fb","title":"facebook","fields":[["username", "user"],["password", "pass", {type: 'password'}]]}]}});
+    }
+  });
+
 });

@@ -1,6 +1,14 @@
 var Client = require('./../node-irc').Client
   , identd = require('./../identd');
 
+exports.addpage =
+  {"name":"irc",
+   "title":"IRC",
+   "fields":[
+    ["server", "server"],
+    ["nickname", "nick"],
+    ["channels", "chans"]]};
+
 exports.start = function(socket, data, callback) {
   var client = new Client(data.nick)
     , server = client.connect(data.server);

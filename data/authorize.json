@@ -1,0 +1,18 @@
+{"heading":"welcome to bubblegum",
+ "pages":[
+  {"name":"auth",
+   "title":"log in",
+   "fields":[
+    ["username", "user"],
+    ["password", "pass", {"type":"password"}]]},
+  {"name":"create",
+   "title":"register",
+   "fields":[
+    ["username", "user"],
+    ["email address", "email"],
+    ["password", "pass", {"type":"password"}],
+    ["password (again)", "passconf", {"type":"password"}]]},
+  {"name":"reset",
+   "title":"recover password",
+   "fields":[
+    ["username", "user"]]}]}

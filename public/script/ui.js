@@ -1,5 +1,83 @@
+$.UI = function (profile) {
+  this.profile = profile;
+  
+  this.$nav = $('<navigation/>').append($('<ul/>').addClass('root'));
+  this.$nav.css({left: 200}).animate({left: 0});
+  this.$dom = $('<div/>').addClass('app').append(this.$nav);
+  $('body').append(this.$dom.fadeIn());
+  
+  var $logout = $('<a/>').text('log out').attr('href', '#');
+  $logout.click(function (e) {
+    e.preventDefault();
+    $.socket.emit('logout');
+  });
+  
+  this.$status = $('<div/>').attr('id', 'status');
+  this.$status.append($('<img/>').attr('src', 'http://gravatar.com/avatar/' + profile.emailmd5 + '?s=30'));
+  this.$status.append($('<p/>').append('connected to ', $('<span/>').text('0'), ' services'));
+  this.$status.append($('<p/>').append($('<span/>').text(profile.username), ' | ', $logout));
+  $('header').append(this.$status.fadeIn());
+  
+  this.rebuildTabs(profile.services);
+}
+
+$.UI.prototype.rebuildTabs = function (services) {
+    var $root = this.$nav.find('ul.root').empty();
+    
+    var $tab = $('<a/>').attr('href', '#').addClass('active')
+      , $section = $('<li/>').append($tab);
+    
+    $root.append($section);
+    
+    $tab.append($('<span/>'));
+    $tab.append($(document.createTextNode('add service')));
+    
+    $tab.click(function (e) {
+      $.socket.emit('dialog', {action: 'load', id: 'addservice'});
+    });
+    
+    var ui = this;
+    $.each(services, function (i, service) {
+      ui.addService(service);
+    });
+    
+  };
+  
+  $.UI.prototype.addService= function (service) {
+    var $tab = $('<a/>').attr('href', '#')
+      , $list = $('<ul/>')
+      , $section = $('<li/>').append($tab, $list);
+      
+    service.tabGroup = $section;
+    
+    this.$nav.find('ul.root>li:last').before($section);
+    
+    $tab.append($('<span/>'));
+    $tab.append($(document.createTextNode(service.name)));
+    
+    var ui = this;
+    $.each(service.views, function (i, view) {
+      ui.addView(service, view);
+    });
+  }
+  
+  $.UI.prototype.addView= function (service, view) {
+    var $tab = $('<a/>').attr('href', '#')
+      , $section = $('<li/>').append($tab);
+    
+    service.tabGroup.find('ul').append($section);
+    
+    $tab.append($('<span/>').text(view.unread));
+    $tab.append($(document.createTextNode(view.label || view.name)));
+  }
+  
+  $.UI.prototype.close= function () {
+    this.$nav.animate({left: 200});
+    this.$dom   .fadeOut(function () { $(this).remove(); });
+    this.$status.fadeOut(function () { $(this).remove(); });
+  }
+
 $(function() {
-  $.socket = io.connect();
   $.tab = $('a.active');
   $.view = $('section.active');
   
@@ -140,49 +218,4 @@ $(function() {
     $.socket.emit('event', [$.tab.attr('data-service'), 'message', [$.tab.attr('data-viewid'), $input.val()]]);
     $input.val('');
   });
-  
-  $('#login form').submit(function (e) {
-    e.preventDefault();
-    var $form = $(e.target);
-    
-    $.socket.emit('login', [$form.find('[name=user]').val(), $form.find('[name=pass]').val()]);
-    
-    $form.find('input').attr('disabled', true);
-    $form.append($('<div/>').addClass('pulser'));
-    
-    setTimeout(function () {
-      $('#authorize').animate({height: '1px', opacity: 0, 'margin-top': '0'}, function () {
-        $('#authorize').remove();
-      });
-      
-      var $tab = $('<a/>').attr('href', '#').addClass('active')
-        , $section = $('<li/>').append($tab)
-        , $list = $('<ul/>').append($section);
-      
-      $tab.append($('<span/>'));
-      $tab.append($(document.createTextNode('add service')));
-      
-      var $form = $('<form/>');
-      $form.append($('<p/>').append($('<label/>').text('JSON object: ')).append($('<input/>').attr('name', 'json').attr('type', 'text').val('{}')));
-      $form.append($('<p/>').append($('<input/>').attr('type', 'submit').val('add')));
-      
-      var $view = $('<section/>').addClass('active').addClass('view');
-      $view.append($('<h1/>').text('add service to bubblegum'));
-      $view.append($('<p/>').text('Please enter your account information to access it via Bubblegum.'));
-      $view.append($form);
-      
-      $('#views').append($view);
-      $view.css({opacity: 0}).animate({opacity: 1});
-      $('#tabbar').append($tab).css({opacity: 0, left: '200px'}).animate({left: 0, opacity: 1});
-      
-      $('#status').append($('<img/>').attr('src', 'http://gravatar.com/avatar/8659be3fd35757561943aa00a28c8e0a?s=30'));
-      $('#status').append($('<p/>').html('connected to <span>0</span> services'));
-      $('#status').append($('<p/>').text('danopia | log out'));
-      $('#status').css({opacity: 0}).animate({opacity: 1});
-    }, 1000);
-  });
-  
-  $('#login').css({width: '50%', 'margin-left': '25%', opacity: 0.5}).animate({width: '100%', 'margin-left': '0%', opacity: 1});
-  
-  $('#login [name=user]').focus();
 });
