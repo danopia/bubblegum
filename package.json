@@ -10,8 +10,8 @@
   },
   "main": "index.js",
   "engines": {
-    "node": "~0.8.7",
-    "npm":"1.1.46"
+    "node": "0.8.x",
+    "npm":"1.1.x"
   },
   "dependencies": {
     "express": "3.0.0beta5",
