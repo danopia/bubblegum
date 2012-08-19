@@ -1,15 +1,21 @@
 var express = require('express')
+  , mongo = require('mongodb')
   , utils = require('./utils')
 
   , app = express()
   , server = require('http').createServer(app)
   , io = require('socket.io').listen(server)
+  , db = new mongo.Db('bubblegum', new mongo.Server("127.0.0.1", 27017, {}))
 
   , sockets = []
   , profiles = {};
 
 server.listen(80, function () {
   console.log('Listening on http://localhost/');
+});
+
+db.open(function (err) {
+  console.log(err ? err : 'Connected to MongoDB');
 });
 
 app.use(express.static(__dirname + '/public'));
@@ -69,15 +75,17 @@ io.sockets.on('connection', function (socket) {
     if (e.action == 'submit') {
       switch (e.page) {
       case 'auth':
-        if (e.fields.user == 'danopia') {
-          socket.emit('dialog', {action: 'close', id: 'auth'});
-          var profile = require('./profiles/danopia');
-          profile.emailmd5 = require('crypto').createHash('md5').update(profile.email).digest('hex');
-          socket.emit('login', profile);
-        } else {
-          socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Invalid username or password.'});
-          socket.emit('dialog', {action: 'unlock', id: 'auth'});
-        }
+        var coll = new mongo.Collection(db, 'accounts');
+        coll.ensureIndex('user');
+        coll.findOne({user: e.fields.user}, function (err, account) {
+          if (account && account.password == e.fields.pass) {
+            socket.emit('dialog', {action: 'close', id: 'auth'});
+            socket.emit('login', account);
+          } else {
+            socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Invalid username or password.'});
+            socket.emit('dialog', {action: 'unlock', id: 'auth'});
+          }
+        });
         break;
         
       case 'create':
