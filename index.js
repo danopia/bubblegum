@@ -8,7 +8,9 @@ var express = require('express')
   , sockets = []
   , profiles = {};
 
-server.listen(4200);
+server.listen(80, function () {
+  console.log('Listening on http://localhost/');
+});
 
 app.use(express.static(__dirname + '/public'));
 app.get('/', function (req, res) {
