@@ -1,5 +1,6 @@
 var express = require('express')
   , mongo = require('mongodb')
+  , bcrypt = require('bcrypt')
   , utils = require('./utils')
 
   , app = express()
@@ -78,13 +79,15 @@ io.sockets.on('connection', function (socket) {
         var coll = new mongo.Collection(db, 'accounts');
         coll.ensureIndex('user');
         coll.findOne({user: e.fields.user}, function (err, account) {
-          if (account && account.password == e.fields.pass) {
-            socket.emit('dialog', {action: 'close', id: 'auth'});
-            socket.emit('login', account);
-          } else {
-            socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Invalid username or password.'});
-            socket.emit('dialog', {action: 'unlock', id: 'auth'});
-          }
+          bcrypt.compare(e.fields.pass, account ? account.password : '', function (err, same) {
+            if (same) {
+              socket.emit('dialog', {action: 'close', id: 'auth'});
+              socket.emit('login', account);
+            } else {
+              socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Invalid username or password.'});
+              socket.emit('dialog', {action: 'unlock', id: 'auth'});
+            };
+          });
         });
         break;
         
