@@ -17,6 +17,9 @@ server.listen(80, function () {
 
 db.open(function (err) {
   console.log(err ? err : 'Connected to MongoDB');
+
+  var coll = new mongo.Collection(db, 'accounts');
+  coll.ensureIndex('user', {unique: true});
 });
 
 app.use(express.static(__dirname + '/public'));
@@ -77,9 +80,8 @@ io.sockets.on('connection', function (socket) {
       switch (e.page) {
       case 'auth':
         var coll = new mongo.Collection(db, 'accounts');
-        coll.ensureIndex('user');
         coll.findOne({user: e.fields.user}, function (err, account) {
-          bcrypt.compare(e.fields.pass, account ? account.password : '', function (err, same) {
+          bcrypt.compare(e.fields.pass, account ? account.passhash : '', function (err, same) {
             if (same) {
               socket.emit('dialog', {action: 'close', id: 'auth'});
               socket.emit('login', account);
@@ -92,15 +94,28 @@ io.sockets.on('connection', function (socket) {
         break;
         
       case 'create':
-        if (e.fields.user == 'danopia') {
-          socket.emit('dialog', {action: 'close', id: 'auth'});
-          var profile = require('./profiles/danopia');
-          profile.emailmd5 = require('crypto').createHash('md5').update(profile.email).digest('hex');
-          socket.emit('login', profile);
-        } else {
-          socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Invalid username or password.'});
-          socket.emit('dialog', {action: 'unlock', id: 'auth'});
-        }
+        bcrypt.hash(e.fields.pass, 10, function (err, hash) {
+          var account = {
+            user: e.fields.user,
+            passhash: hash,
+            email: e.fields.email,
+            emailmd5: require('crypto').createHash('md5').update(e.fields.email).digest('hex')
+          };
+            
+          var coll = new mongo.Collection(db, 'accounts');
+          coll.insert(account, {safe: true}, function (err, obj) {
+            if (!err) {
+              socket.emit('dialog', {action: 'close', id: 'auth'});
+              socket.emit('login', account);
+            } else if (err.code == 11000) {
+              socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Username is already taken.'});
+              socket.emit('dialog', {action: 'unlock', id: 'auth'});
+            } else {
+              socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Unknown error occured.'});
+              socket.emit('dialog', {action: 'unlock', id: 'auth'});
+            };
+          });
+        });
         break;
       }
     } else if (e.action == 'load') {
