@@ -67,14 +67,30 @@ io.sockets.on('connection', function (socket) {
   
   socket.on('dialog', function (e) {
     if (e.action == 'submit') {
-      if (e.fields.user == 'danopia') {
-        socket.emit('dialog', {action: 'close', id: 'auth'});
-        var profile = require('./profiles/danopia');
-        profile.emailmd5 = require('crypto').createHash('md5').update(profile.email).digest('hex');
-        socket.emit('login', profile);
-      } else {
-        socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Invalid username or password.'});
-        socket.emit('dialog', {action: 'unlock', id: 'auth'});
+      switch (e.page) {
+      case 'auth':
+        if (e.fields.user == 'danopia') {
+          socket.emit('dialog', {action: 'close', id: 'auth'});
+          var profile = require('./profiles/danopia');
+          profile.emailmd5 = require('crypto').createHash('md5').update(profile.email).digest('hex');
+          socket.emit('login', profile);
+        } else {
+          socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Invalid username or password.'});
+          socket.emit('dialog', {action: 'unlock', id: 'auth'});
+        }
+        break;
+        
+      case 'create':
+        if (e.fields.user == 'danopia') {
+          socket.emit('dialog', {action: 'close', id: 'auth'});
+          var profile = require('./profiles/danopia');
+          profile.emailmd5 = require('crypto').createHash('md5').update(profile.email).digest('hex');
+          socket.emit('login', profile);
+        } else {
+          socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Invalid username or password.'});
+          socket.emit('dialog', {action: 'unlock', id: 'auth'});
+        }
+        break;
       }
     } else if (e.action == 'load') {
       socket.emit('dialog', {action: 'open', id: e.id, data: {heading: 'add new service', pages: [
