@@ -1,4 +1,4 @@
-exports.Event = function(line, server) {
+exports.Event = function(line, conn) {
   var x;
 
   this.line = line;
@@ -21,9 +21,9 @@ exports.Event = function(line, server) {
     this.params = line.split(' ');
   }
 
-  Object.defineProperty(this, 'server', {
+  Object.defineProperty(this, 'conn', {
     enumerable: false,
-    value: server
+    value: conn
   });
 }
 
@@ -41,5 +41,5 @@ exports.Event.prototype.parseSource = function(raw) {
 }
 
 exports.Event.prototype.reply = function(message) {
-  this.server.message(this.originNick, message);
+  this.conn.message(this.originNick, message);
 }

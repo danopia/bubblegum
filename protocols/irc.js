@@ -1,4 +1,4 @@
-var Client = require('./../node-irc').Client,
+var Conn = require('./../node-irc').Connection,
     identd = require('./../identd');
 
 exports.addpage =
@@ -7,14 +7,16 @@ exports.addpage =
    "fields":[
     ["server", "server"],
     ["nickname", "nick"],
+    ["real name", "gecos"],
     ["channels", "chans"]]};
 
 exports.start = function(socket, data, callback) {
-  var client = new Client(data.nick),
-      server = client.connect(data.server);
+  var conn = new Conn(data.server, data.port);
   
-  server.on('connect', function () {
-    identd.register(server, socket.profile.ident);
+  conn.on('connect', function () {
+    identd.register(conn, socket.profile.ident);
+    conn.send('NICK', [data.nick]);
+    conn.send('USER', [data.nick, '*', '*', data.gecos]);
   });
   
   data.tabs = {};
@@ -38,31 +40,31 @@ exports.start = function(socket, data, callback) {
   };
   
   
-  client.on('PING', function(e) {
-    e.server.send('pong', e.params);
+  conn.on('PING', function(e) {
+    e.conn.send('pong', e.params);
   });
 
-  client.on('001', function(e) {
+  conn.on('001', function(e) {
     data.nick = e.params[0];
     callback('connect', -1, data.nick);
     
     data.channels.forEach(function (channel) {
-      e.server.join(channel);
+      e.conn.join(channel);
     });
   });
   
-  client.on('JOIN', function(e) {
+  conn.on('JOIN', function(e) {
     var chan = (e.params[0][0] == ':') ? e.params[0].substr(1) : e.params[0];
     callback('join', getTab(chan).view, e.originNick);
   });
 
   /*
-  client.on('353', function(e) {
+  conn.on('353', function(e) {
     callback('names', [e.params[2], e.params[3]]);
   });
   */
 
-  client.on('PRIVMSG', function(e) {
+  conn.on('PRIVMSG', function(e) {
     var label = (e.params[0][0] == '#') ? e.params[0] : e.originNick;
     callback('message', getTab(label).view, [e.originNick, e.params[1]]);
   });
@@ -72,7 +74,7 @@ exports.start = function(socket, data, callback) {
     
     message: function(info) {
       var target = data.labels[info[0]];
-      server.message(target, info[1]);
+      conn.message(target, info[1]);
       callback('ack', info[0], ['message', data.nick, info[1]]);
     },
     
