@@ -28,7 +28,7 @@ module.exports = function (socket) {
 
 module.exports.prototype.openDialog = function (dialog) {
   if (this.dialogs[dialog.id]) {
-    socket.emit('dialog', {action: 'close', id: dialog.id});
+    this.socket.emit('dialog', {action: 'close', id: dialog.id});
     this.dialogIds = this.dialogIds.splice(this.dialogIds.indexOf(dialog.id), 1);
   }
 
