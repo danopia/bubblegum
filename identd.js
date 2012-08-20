@@ -1,16 +1,16 @@
-var net = require('net')
-  , util = require('util')
-  , spawn = require('child_process').spawn
+var net = require('net'),
+    util = require('util'),
+    spawn = require('child_process').spawn,
 
-  , server = new net.Server();
+    server = new net.Server();
 
 exports.entries = {};
 
 exports.register = function (socket, user) {
-  var addr = socket.address()
-    , local = [addr.address, addr.port]
-    , remote = [socket.remoteAddress, socket.remotePort]
-    , str = util.format('%s:%s->%s:%s', local[0], local[1], remote[0], remote[1]);
+  var addr = socket.address(),
+      local = [addr.address, addr.port],
+      remote = [socket.remoteAddress, socket.remotePort],
+      str = util.format('%s:%s->%s:%s', local[0], local[1], remote[0], remote[1]);
   
   exports.entries[str] = user;
   
@@ -67,8 +67,8 @@ server.listen(11300, function () {
 });
 
 server.on('connection', function (socket) {
-  var localAddr = socket.address().address
-    , remoteAddr = socket.remoteAddress;
+  var localAddr = socket.address().address,
+      remoteAddr = socket.remoteAddress;
 
   socket.on('data', function (data) {
     var parts = data.toString().split(",").map(function (part) {

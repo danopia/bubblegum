@@ -1,5 +1,5 @@
-var Client = require('./../node-irc').Client
-  , identd = require('./../identd');
+var Client = require('./../node-irc').Client,
+    identd = require('./../identd');
 
 exports.addpage =
   {"name":"irc",
@@ -10,8 +10,8 @@ exports.addpage =
     ["channels", "chans"]]};
 
 exports.start = function(socket, data, callback) {
-  var client = new Client(data.nick)
-    , server = client.connect(data.server);
+  var client = new Client(data.nick),
+      server = client.connect(data.server);
   
   server.on('connect', function () {
     identd.register(server, socket.profile.ident);

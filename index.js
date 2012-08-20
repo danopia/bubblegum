@@ -1,14 +1,14 @@
-var express = require('express')
-  , utils = require('./utils')
+var express = require('express'),
+    utils = require('./utils'),
 
-  , app = express()
-  , server = require('http').createServer(app)
-  , io = require('socket.io').listen(server)
+    app = express(),
+    server = require('http').createServer(app),
+    io = require('socket.io').listen(server),
 
-  , Client = require('./client')
-  , db = require('./db')
+    Client = require('./client'),
+    db = require('./db'),
 
-  , sockets = [];
+    sockets = [];
 
 server.listen(80, function () {
   console.log('Listening on http://localhost/');
