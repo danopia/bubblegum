@@ -10,6 +10,8 @@ var express = require('express'),
 
     sockets = [];
 
+io.set('log level', 1);
+
 server.listen(80, function () {
   console.log('Listening on http://localhost/');
 });
