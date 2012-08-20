@@ -29,6 +29,7 @@ exports.onSubmit = function (client, e) {
         if (same) {
           client.socket.emit('dialog', {action: 'close', id: 'auth'});
           client.socket.emit('login', account);
+          client.openDialog(require('./welcomeDialog'));
           client.profile = account;
         } else {
           client.socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Invalid username or password.'});
@@ -51,6 +52,7 @@ exports.onSubmit = function (client, e) {
         if (!err) {
           client.socket.emit('dialog', {action: 'close', id: 'auth'});
           client.socket.emit('login', account);
+          client.openDialog(require('./welcomeDialog'));
           client.profile = account;
         } else if (err.code == 11000) {
           client.socket.emit('dialog', {action: 'flash', id: 'auth', message: 'Username is already taken.'});

@@ -48,11 +48,17 @@ $.authorize = {
     this.page.$link.replaceWith(this.page.$span);
     
     var $form = this.$dom.find('form').empty();
-    
+
     $.each(this.page.fields, function (i, field) {
       var $p = $('<p/>');
-      $p.append($('<label/>').text(field[0]).attr('for', field[1]));
-      $p.append($('<input/>').attr({type: (field[2] ? field[2].type : null) || 'text', name: field[1]}));
+
+      if (field[1]) {
+        $p.append($('<label/>').text(field[0]).attr('for', field[1]));
+        $p.append($('<input/>').attr({type: (field[2] ? field[2].type : null) || 'text', name: field[1]}));
+      } else {
+        $p.html(field[0]);
+      }
+      
       $form.append($p);
     });
     
