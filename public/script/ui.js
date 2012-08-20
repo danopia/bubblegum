@@ -22,60 +22,60 @@ $.UI = function (profile) {
 }
 
 $.UI.prototype.rebuildTabs = function (services) {
-    var $root = this.$nav.find('ul.root').empty();
-    
-    var $tab = $('<a/>').attr('href', '#').addClass('active')
-      , $section = $('<li/>').append($tab);
-    
-    $root.append($section);
-    
-    $tab.append($('<span/>'));
-    $tab.append($(document.createTextNode('add service')));
-    
-    $tab.click(function (e) {
-      $.socket.emit('dialog', {action: 'load', id: 'addservice'});
-    });
-    
-    var ui = this;
-    $.each(services, function (i, service) {
-      ui.addService(service);
-    });
-    
-  };
+  var $root = this.$nav.find('ul.root').empty();
   
-  $.UI.prototype.addService= function (service) {
-    var $tab = $('<a/>').attr('href', '#')
-      , $list = $('<ul/>')
-      , $section = $('<li/>').append($tab, $list);
-      
-    service.tabGroup = $section;
-    
-    this.$nav.find('ul.root>li:last').before($section);
-    
-    $tab.append($('<span/>'));
-    $tab.append($(document.createTextNode(service.name)));
-    
-    var ui = this;
-    $.each(service.views, function (i, view) {
-      ui.addView(service, view);
-    });
-  }
+  var $tab = $('<a/>').attr('href', '#').addClass('active'),
+      $section = $('<li/>').append($tab);
   
-  $.UI.prototype.addView= function (service, view) {
-    var $tab = $('<a/>').attr('href', '#')
-      , $section = $('<li/>').append($tab);
-    
-    service.tabGroup.find('ul').append($section);
-    
-    $tab.append($('<span/>').text(view.unread));
-    $tab.append($(document.createTextNode(view.label || view.name)));
-  }
+  $root.append($section);
   
-  $.UI.prototype.close= function () {
-    this.$nav.animate({left: 200});
-    this.$dom   .fadeOut(function () { $(this).remove(); });
-    this.$status.fadeOut(function () { $(this).remove(); });
-  }
+  $tab.append($('<span/>'));
+  $tab.append($(document.createTextNode('add service')));
+  
+  $tab.click(function (e) {
+    $.socket.emit('dialog', {action: 'load', id: 'addservice'});
+  });
+  
+  var ui = this;
+  $.each(services, function (i, service) {
+    ui.addService(service);
+  });
+  
+};
+
+$.UI.prototype.addService = function (service) {
+  var $tab = $('<a/>').attr('href', '#'),
+      $list = $('<ul/>'),
+      $section = $('<li/>').append($tab, $list);
+    
+  service.tabGroup = $section;
+  
+  this.$nav.find('ul.root>li:last').before($section);
+  
+  $tab.append($('<span/>'));
+  $tab.append($(document.createTextNode(service.name)));
+  
+  var ui = this;
+  $.each(service.views, function (i, view) {
+    ui.addView(service, view);
+  });
+}
+
+$.UI.prototype.addView = function (service, view) {
+  var $tab = $('<a/>').attr('href', '#'),
+      $section = $('<li/>').append($tab);
+  
+  service.tabGroup.find('ul').append($section);
+  
+  $tab.append($('<span/>').text(view.unread));
+  $tab.append($(document.createTextNode(view.label || view.name)));
+}
+
+$.UI.prototype.close = function () {
+  this.$nav.animate({left: 200});
+  this.$dom   .fadeOut(function () { $(this).remove(); });
+  this.$status.fadeOut(function () { $(this).remove(); });
+}
 
 $(function() {
   $.tab = $('a.active');
@@ -89,8 +89,8 @@ $(function() {
     if ($.views[servid][tabid])
       return $.views[servid][tabid];
     
-    var $tab = $.views[servid][tabid] = $('<section/>').addClass('view')
-      , $form = $('<form/>').append($('<input/>').attr('type', 'text'));
+    var $tab = $.views[servid][tabid] = $('<section/>').addClass('view'),
+        $form = $('<form/>').append($('<input/>').attr('type', 'text'));
     
     $tab.append($('<h3/>').addClass('topic'));
     $tab.append($('<ul/>').addClass('scrollback'));
