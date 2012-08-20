@@ -235,7 +235,7 @@ section.view {
 /******************************************************************************
  *** Authorize dialogs
  ***/
-#authorize {
+.dialog {
   position: absolute;
   left: 50%;
   width: 400px;
@@ -244,7 +244,7 @@ section.view {
   margin: 0 0 0 -200px;
 }
 
-#authorize h2 {
+.dialog h2 {
   padding: 0 0 10px 0;
   margin: 0;
   text-align: center;
@@ -255,7 +255,7 @@ section.view {
   text-shadow: 0 0 2px #000, 0 0 1px #000, 1px 1px 1px #000;
 }
 
-#authorize .flash {
+.dialog .flash {
   position: absolute;
   left: 0;
   right: 0;
@@ -271,20 +271,20 @@ section.view {
   text-align: center;
 }
 
-#authorize p.links {
+.dialog p.links {
   margin: 15px 0 0 0;
   text-align: center;
   color: #333;
   font-size: 12px;
 }
 
-#authorize p.links a {
+.dialog p.links a {
   text-transform: lowercase;
   color: #999;
   text-shadow: 0 0 2px #000, 0 0 1px #000, 1px 1px 1px #000;
 }
 
-#authorize p.links span {
+.dialog p.links span {
   text-transform: lowercase;
   color: #666;
   text-shadow: 0 0 2px #000, 0 0 1px #000, 1px 1px 1px #000;
