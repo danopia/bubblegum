@@ -15,7 +15,7 @@ $.UI = function (profile) {
   this.$status = $('<div/>').attr('id', 'status');
   this.$status.append($('<img/>').attr('src', 'http://gravatar.com/avatar/' + profile.emailmd5 + '?s=30'));
   this.$status.append($('<p/>').append('connected to ', $('<span/>').text('0'), ' services'));
-  this.$status.append($('<p/>').append($('<span/>').text(profile.username), ' | ', $logout));
+  this.$status.append($('<p/>').append($('<span/>').text(profile.user), ' | ', $logout));
   $('header').append(this.$status.fadeIn());
   
   this.rebuildTabs(profile.services);
