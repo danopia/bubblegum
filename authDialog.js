@@ -4,22 +4,25 @@ var bcrypt = require('bcrypt'),
 exports.id = 'auth';
 exports.heading = 'welcome to bubblegum';
 exports.pages = [
-  {"name":"auth",
-   "title":"log in",
-   "fields":[
-    ["username", "user"],
-    ["password", "pass", {"type":"password"}]]},
-  {"name":"create",
-   "title":"register",
-   "fields":[
-    ["username", "user"],
-    ["email address", "email"],
-    ["password", "pass", {"type":"password"}],
-    ["password (again)", "passconf", {"type":"password"}]]},
-  {"name":"reset",
-   "title":"recover password",
-   "fields":[
-    ["username", "user"]]}];
+  {name:  'auth',
+   title: 'log in',
+   fields:
+   [['username', 'user'],
+    ['password', 'pass', {type: 'password'}],
+    ['log in',   'auth', {type: 'submit'}]]},
+  {name:  'create',
+   title: 'register',
+   fields:
+   [['username',         'user'],
+    ['email address',    'email'],
+    ['password',         'pass',     {type: 'password'}],
+    ['password (again)', 'passconf', {type: 'password'}],
+    ['log in',           'register', {type: 'submit'}]]},
+  {name:  'reset',
+   title: 'recover password',
+   fields:
+   [['username', 'user'],
+    ['submit',   'recover', {type: 'submit'}]]}];
 
 exports.onSubmit = function (client, e) {
   switch (e.page) {

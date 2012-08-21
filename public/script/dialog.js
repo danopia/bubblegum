@@ -54,7 +54,9 @@ $.Dialog.prototype.switchTo = function (id) {
   $.each(this.page.fields, function (i, field) {
     var $p = $('<p/>');
 
-    if (field[1]) {
+    if (field[2] && field[2].type == 'submit') {
+      $p.append($('<input/>').attr({type: 'submit', name: field[1], value: field[0]}));
+    } else if (field[1]) {
       $p.append($('<label/>').text(field[0]).attr('for', field[1]));
       $p.append($('<input/>').attr({type: (field[2] ? field[2].type : null) || 'text', name: field[1]}));
     } else {
@@ -64,7 +66,6 @@ $.Dialog.prototype.switchTo = function (id) {
     $form.append($p);
   });
   
-  $form.append($('<p/>').append($('<input/>').attr('type', 'submit').val(this.page.title)));
   $form.find(':input:first').focus();
   
   this.$dom.css({'margin-top': -this.$dom.innerHeight() / 2});

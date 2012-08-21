@@ -29,7 +29,7 @@ $(function() {
       
     case 'close':
       dialogs[e.id].close();
-      //delete dialogs[e.id];
+      delete dialogs[e.id];
       break;
 
     };
