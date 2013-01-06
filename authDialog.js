@@ -17,12 +17,14 @@ exports.pages = [
     ['email address',    'email'],
     ['password',         'pass',     {type: 'password'}],
     ['password (again)', 'passconf', {type: 'password'}],
-    ['log in',           'register', {type: 'submit'}]]},
+    ['create account',   'register', {type: 'submit'}]]},
   {name:  'reset',
    title: 'recover password',
    fields:
-   [['username', 'user'],
-    ['submit',   'recover', {type: 'submit'}]]}];
+   [['username',      'user'],
+    ['or'],
+    ['email address', 'email'],
+    ['submit',        'recover', {type: 'submit'}]]}];
 
 exports.onSubmit = function (client, e) {
   switch (e.page) {

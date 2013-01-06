@@ -5,10 +5,11 @@ exports.pages = [
    "title":"intro",
    "fields":[
     ["Welcome to Bubblegum!"],
-    ["To get right to work, hit up the 'Add Service' button on the left."],
-    ["You will be prompted for connection details. You can also switch"+
-     "protocols with the little menu below the dialog."],
-    ["To learn more about Bubblegum, try the menu below this dialog."],
+    ["Get right to it and add an instant messaging account."],
+    ['add service', 'add', {type: 'submit'}],
+    ["You will be prompted for connection details. You can also switch " +
+     "protocols with the menu below the dialog."],
+    ["Or, to learn more about Bubblegum, try the menu below this dialog."],
     ["Go ahead, I don't bite."]]},
   {"name":"goals",
    "title":"goals",
@@ -22,4 +23,11 @@ exports.pages = [
    "fields":[
     ["username", "user"]]}];
 
-exports.onSubmit = function (client, e) {}
+exports.onSubmit = function (client, e) {
+  switch (e.page) {
+  case 'intro':
+    client.socket.emit('dialog', {action: 'close', id: 'welcome'});
+    client.openDialog(require('./welcomeDialog'));
+    break;
+  }
+}

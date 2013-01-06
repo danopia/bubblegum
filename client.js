@@ -16,14 +16,18 @@ module.exports = function (socket) {
       dialog.onSubmit(self, pkt);
     } else {
       // TODO
-      self.socket.emit('dialog', {action: 'open', id: pkt.id, data: {heading: 'add new service', pages: [
-        require('./protocols/irc').addpage,
-        {"name":"fb","title":"facebook","fields":[["username", "user"],["password", "pass", {type: 'password'}]]}]}});
+      self.sendServicesDia();
     };
   });
 
   console.log("New socket connection from " +
               this.address.address + ":" + this.address.port);
+}
+
+module.exports.prototype.sendServicesDia = function () {
+  this.socket.emit('dialog', {action: 'open', id: 'addservice', data: {heading: 'add new service', pages: [
+    require('./protocols/irc').addpage,
+    {"name":"fb","title":"facebook","fields":[["username", "user"],["password", "pass", {type: 'password'}]]}]}});
 }
 
 module.exports.prototype.openDialog = function (dialog) {
