@@ -18,7 +18,7 @@ $.UI = function (profile) {
   this.$status.append($('<p/>').append($('<span/>').text(profile.user), ' | ', $logout));
   $('header').append(this.$status.fadeIn());
   
-  this.rebuildTabs(profile.services);
+  this.rebuildTabs(profile.services || []);
 }
 
 $.UI.prototype.rebuildTabs = function (services) {
