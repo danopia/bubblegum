@@ -75,6 +75,15 @@ $.UI.prototype.close = function () {
   this.$nav.animate({left: 200});
   this.$dom   .fadeOut(function () { $(this).remove(); });
   this.$status.fadeOut(function () { $(this).remove(); });
+  
+  if ($.dialogs) {
+    $.each($.dialogs, function (key, dialog) {
+      this.close();
+    });
+    
+    delete $.dialogs;
+    $.dialogs = {};
+  };
 }
 
 $(function() {
