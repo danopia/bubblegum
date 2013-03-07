@@ -1,0 +1,42 @@
+#preload { text-align: center; }
+
+body {
+  font-family: "Ubuntu Sans", sans-serif;
+
+  background: #1f354f; /* Old browsers */
+  /* #121518 to #1f354f */
+  background: -moz-linear-gradient(top,  #1f354f 0%, #121518 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#1f354f), color-stop(100%,#121518)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #1f354f 0%,#121518 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #1f354f 0%,#121518 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #1f354f 0%,#121518 100%); /* IE10+ */
+  background: linear-gradient(to bottom,  #1f354f 0%,#121518 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1f354f', endColorstr='#121518',GradientType=0 ); /* IE6-9 */
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/*******************************************************************************
+ *** Modal Dialogs ***
+ **/
+
+.dialog {
+  position: absolute;
+  width: 400px;
+  margin-left: -200px;
+  padding: 1em;
+  left: 50%;
+
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+
+  background: #ddd;
+  /*background: -moz-linear-gradient(top, rgb(200,200,200) 0%, rgb(210,210,210) 25%, rgb(150,150,150) 100%);*/
+
+  box-shadow: 0 5px 25px 5px rgba(0,0,0,0.5);
+}

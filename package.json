@@ -1,0 +1,23 @@
+{
+  "author": "Daniel Lamando <me@danopia.net> (http://danopia.net/)",
+  "name": "bubblegum",
+  "description": "HTML5 communications system; znc on drugs",
+  "version": "0.0.1",
+  "homepage": "https://github.com/danopia/bubblegum",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/danopia/bubblegum.git"
+  },
+  "main": "index.js",
+  "engines": {
+    "node": "0.8.x",
+    "npm":"1.1.x"
+  },
+  "Zdependencies": {
+    "express": "3.0.0rc3",
+    "socket.io": "0.9.6",
+    "mongodb": "1.1.4",
+    "bcrypt": "0.7.1"
+  },
+  "devDependencies": {}
+}
