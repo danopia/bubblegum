@@ -21,15 +21,33 @@ html, body {
 }
 
 /*******************************************************************************
+ *** Top/Header Bar ***
+ **/
+
+.ui header {
+  border-bottom: 1px solid #444;
+  margin-bottom: 1em;
+  background-color: rgba(0,0,0,0.5);
+  box-shadow: 0 0 25px 5px rgba(0,0,0,0.3);
+}
+
+header h1 {
+  margin: 0;
+  padding: 4px 0.5em;
+  text-transform: lowercase;
+  color: #ddd;
+  font-size: 100%;
+  font-weight: normal;
+}
+
+/*******************************************************************************
  *** Modal Dialogs ***
  **/
 
 .dialog {
-  position: absolute;
   width: 400px;
-  margin-left: -200px;
   padding: 1em;
-  left: 50%;
+  margin: 0 auto;
 
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -40,3 +58,21 @@ html, body {
 
   box-shadow: 0 5px 25px 5px rgba(0,0,0,0.5);
 }
+
+.dialog h2 {
+  margin: 0;
+  text-align: center;
+  text-transform: lowercase;
+  font-size: 200%;
+}
+
+.dialog label, .dialog input, .dialog button {
+  display: inline-block;
+
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.dialog label  { width: 30%;  color: #333; font-size: 120%; text-align: right; padding-right: 1em; }
+.dialog input  { width: 70%;  font-size: 150%; padding: 5px; }
+.dialog button { width: 100%; color: #333; font-size: 150%; padding: 5px; display: block; }

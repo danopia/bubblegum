@@ -1,9 +1,8 @@
-var dia = new $.Dialog('login', 'Welcome to Bubblegum');
+var dia = new $.Dialog('login', 'Please sign in');
 dia.layout([
-  ['p', {text: 'Please log in.'}],
   ['field', {label: 'username', name: 'user'}],
   ['field', {label: 'password', name: 'pass', type: 'password'}],
-  ['button', {text: 'log in'}]]);
+  ['button', {text: 'get chatting'}]]);
 
 dia.submit(function (data) {
   var dia = new $.Dialog('addservice', 'Add a Service');
@@ -16,11 +15,11 @@ dia.submit(function (data) {
   dia.submit(function (data) {
     console.log('Form:', data);
   });
-    
+
   var ui = new $.UI('main').append(dia);
   $.window.setUI(ui);
 });
-  
+
 var ui = new $.UI('login').append(dia);
 $.window.setUI(ui);
 

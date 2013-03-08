@@ -1,6 +1,6 @@
 $.Dialog = function (key, title) {
   this.$dom = $('<article class="dialog dialog-'+key+'"/>');
-  this.$dom.append($('<header/>', {text: title}), '<form/>');
+  this.$dom.append($('<h2/>', {text: title}), '<form/>');
 
   var self = this;
   this.$dom.find('form').submit(function (e) {
