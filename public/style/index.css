@@ -59,6 +59,8 @@ header h1 {
   box-shadow: 0 5px 25px 5px rgba(0,0,0,0.5);
 }
 
+.dialog form p:last-child { margin-bottom: 0; }
+
 .dialog h2 {
   margin: 0;
   text-align: center;

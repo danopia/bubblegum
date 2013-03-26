@@ -7,7 +7,7 @@ dia.layout([
 dia.submit(function (data) {
   var dia = new $.Dialog('addservice', 'Add a Service');
   dia.layout([
-    ['p', {text: 'IRC only right now.'}],
+    'IRC only right now.',
     ['field', {name: 'server'}],
     ['field', {name: 'nick'}],
     ['button', {text: 'connect'}]]);

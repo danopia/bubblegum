@@ -12,19 +12,25 @@ $.Dialog.prototype.layout = function (layout) {
   var $inner = this.$dom.find('form');
   $inner.html(''); // TODO
 
-  var i;
+  var i, item, $p;
   for (i in layout) {
-    var item = layout[i];
-    switch (item[0]) {
-    case 'field':
-      $inner.append($('<p/>').append(
-        $('<label/>', {text: item[1].label || item[1].name}),
-        $('<input/>', {type: item[1].type || 'text', name: item[1].name})
-      ));
-      break;
+    item = layout[i];
+    $p = $('<p/>').appendTo($inner);
 
-    default:
-      $inner.append($('<'+item[0]+'/>', item[1]));
+    if (typeof item == 'string') {
+      $p.text(item);
+    } else {
+      switch (item[0]) {
+      case 'field':
+        $p.append(
+          $('<label/>', {text: item[1].label || item[1].name}),
+          $('<input/>', {type: item[1].type || 'text', name: item[1].name})
+        );
+        break;
+
+      default:
+        $p.append($('<'+item[0]+'/>', item[1]));
+      };
     };
   };
 };
