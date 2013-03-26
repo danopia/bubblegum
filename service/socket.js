@@ -6,6 +6,10 @@ exports.unixPath = function (name) {
   return path.join('/run', 'user', process.env.USER, 'bubblegum', name);
 };
 
+exports.unixConnect = function (name) {
+  return net.connect(exports.unixPath(name));
+};
+
 
 exports.banner = function (sock, obj) {
   sock.on('connect', function () {

@@ -1,7 +1,5 @@
-var sock = require('./socket'),
-    net  = require('net');
-
-var socket = net.connect(sock.unixPath('master'));
+var sock   = require('./socket');
+var socket = sock.unixConnect('master');
 sock.json(socket);
 sock.banner(socket, {welcome: 'hey', session: 'test'});
 
