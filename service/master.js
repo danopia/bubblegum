@@ -1,4 +1,5 @@
-var fs   = require('fs'),
+var sock = require('./socket'),
+    fs   = require('fs'),
     path = require('path'),
     net  = require('net');
 
@@ -11,7 +12,7 @@ function gotProto (proto, module) {
   protos[proto] = {
     module: module,
     build: function (conn) {
-      module.sock.write(JSON.stringify({prep: conn}) + '\n');
+      module.sock.send({prep: conn});
       conns[conn.guid] = conn;
       
       conn.module = module;
@@ -32,8 +33,8 @@ function loadProfile (profile, client) {
       if (c.add) {
         c.add(client);
         client.guids.push(c.guid);
-        protos[c.protocol].module.sock.write(JSON.stringify({refresh: c.guid}) + '\n');
-        //client.write(JSON.stringify({guid: c.guid, status: 'existing'}) + '\n');
+        protos[c.protocol].module.sock.send({refresh: c.guid});
+        //client.send({guid: c.guid, status: 'existing'});
       };
     });
   } else {
@@ -44,8 +45,8 @@ function loadProfile (profile, client) {
         protos[c.protocol].build(c);
         c.add(client);
         client.guids.push(c.guid);
-        //client.write(JSON.stringify({guid: c.guid, status: 'new'}) + '\n');
-        protos[c.protocol].module.sock.write(JSON.stringify({refresh: c.guid}) + '\n');
+        //client.send({guid: c.guid, status: 'new'});
+        protos[c.protocol].module.sock.send({refresh: c.guid});
       };
     });
   };
@@ -61,32 +62,22 @@ function sighting (name) {
     
     modules[name] = {};
     console.log('Connecting to', name);
-    modules[name].sock = net.connect(path.join(root, name), function () {
-      modules[name].sock.write(JSON.stringify({welcome: 'hey'}) + '\n');
-    });
+    modules[name].sock = net.connect(path.join(root, name));
+    sock.json(modules[name].sock);
+    sock.banner(modules[name].sock, {welcome: 'hey'});
     
-    var buffer = '';
-    modules[name].sock.on('data', function (block) {
-      buffer += block;
-      while (buffer.indexOf('\n') >= 0) {
-        var line = buffer.slice(0, buffer.indexOf('\n'));
-        buffer = buffer.slice(buffer.indexOf('\n') + 1);
-        
-        var msg = JSON.parse(line);
-        console.log(name, 'sent', msg);
-        
-        if (msg.welcome == 'hey') {
-          msg.protocols.forEach(function (proto) {
-            gotProto(proto, modules[name]);
-          });
-        } else if (msg.guid) {
-          var conn = conns[msg.guid];
-          conn.clients.forEach(function (client) {
-            client.write(JSON.stringify(msg) + '\n');
-          });
-        };
+    modules[name].sock.on('json', function (msg) {
+      if (msg.welcome == 'hey') {
+        msg.protocols.forEach(function (proto) {
+          gotProto(proto, modules[name]);
+        });
+      } else if (msg.guid) {
+        var conn = conns[msg.guid];
+        conn.clients.forEach(function (client) {
+          client.send(msg);
+        });
       };
-    }).setEncoding('utf8');
+    });
     
     modules[name].sock.on('end', function () {
       console.log('Disconnected from', name);
@@ -115,6 +106,7 @@ fs.mkdir(root, function (err) {
   
   var server = net.createServer(function (c)  {
     console.log('client connected');
+    sock.json(c);
     
     c.on('end', function () {
       console.log('client disconnected', c.guids);
@@ -127,35 +119,26 @@ fs.mkdir(root, function (err) {
       });
     });
     
-    var buffer = '';
     c.guids = [];
-    c.on('data', function (block) {
-      buffer += block;
-      while (buffer.indexOf('\n') >= 0) {
-        var line = buffer.slice(0, buffer.indexOf('\n'));
-        buffer = buffer.slice(buffer.indexOf('\n') + 1);
-        
-        var msg = JSON.parse(line);
-        console.log('client sent', msg);
-        
-        if (msg.welcome == 'hey') {
-          c.session = msg.session;
-          c.write(JSON.stringify({welcome: 'hey', protocols: Object.keys(protos)}) + '\n');
-        } else if (msg.auth && msg.username == 'danopia') {
-          var profile = {
-            guid: 'danopia',
-            conns: [
-              {protocol: 'irc', server: 'irc.tenthbit.net', channels: ['#bubblegum'], nick: 'danogum', guid: 'deadbeef'}
-            ]
-          };
-          
-          loadProfile(profile, c);
-        } else if (msg.guid) {
-          var conn = conns[msg.guid];
-          conn.module.sock.write(JSON.stringify(msg) + '\n');
+    c.on('json', function (msg) {
+      if (msg.welcome == 'hey') {
+        c.session = msg.session;
+        c.send({welcome: 'hey', protocols: Object.keys(protos)});
+      } else if (msg.auth && msg.auth.username == 'danopia') {
+        var profile = {
+          guid: 'danopia',
+          conns: [
+            {protocol: 'irc', server: 'irc.tenthbit.net', channels: ['#bubblegum', '#offtopic', '#programming'], nick: 'danogum', guid: 'deadbeef'},
+            {protocol: 'irc', server: 'irc.freenode.net', channels: ['#freenode', '#defocus', '#botters'],       nick: 'danogum', guid: 'livebeef'}
+          ]
         };
+        
+        loadProfile(profile, c);
+      } else if (msg.guid) {
+        var conn = conns[msg.guid];
+        conn.module.sock.send(msg);
       };
-    }).setEncoding('utf8');
+    });
   }).listen(path.join(root, 'master'), function () {
     console.log('server bound');
   });
