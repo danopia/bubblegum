@@ -13,8 +13,8 @@ function fetchConn (deets) {
     deets.sock = net.connect(deets.port || 6667, deets.server, function () {
       console.log('Connected to', deets.server);
       
-      deets.sock.write('NICK ' + deets.nick + '\r\n');
-      deets.sock.write('USER bubblegum * * :A loyal Bubblegum beta-tester :3\r\n');
+      deets.sock.send('NICK ' + deets.nick);
+      deets.sock.send('USER bubblegum * * :A loyal Bubblegum beta-tester :3');
       
       deets.status = 'authing';
       server.c && server.c.send({guid: deets.guid, status: deets.status});
@@ -42,7 +42,7 @@ function fetchConn (deets) {
 };
 
 var server;
-fs.unlink(socket, function (err) {
+fs.unlink(sock.unixPath('irc'), function (err) {
   server = net.createServer(function (c)  {
     console.log('master connected');
     sock.json(c);

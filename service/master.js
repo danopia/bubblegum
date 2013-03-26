@@ -94,7 +94,7 @@ fs.mkdir(root, function (err) {
   
   console.log('Running out of', root);
   
-  fs.watch(root, { persistent: false }, function (event, filename) {
+  fs.watch(root, {persistent: false}, function (event, filename) {
     sighting(filename);
   });
   
